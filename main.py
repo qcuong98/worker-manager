@@ -36,4 +36,4 @@ if __name__ == '__main__':
     t.start()
     task = asyncio.run_coroutine_threadsafe(worker_manager.main(), loop)
 
-    app.run(host = "0.0.0.0", port = 8000, debug=True) 
+    app.run(host = "0.0.0.0", port = 8000, debug=False) 
