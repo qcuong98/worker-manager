@@ -3,13 +3,14 @@
 </div>
 
 # DETAILS
-<div align="center">
-  <img src="imgs/detail.png" alt="Detail">
-</div>
  - There are two types of task: Business and Technical
  - There are 3 types of worker: Type A (speed = 1.5), Type B (speed = 1.2), Type C (speed = 1)
  - Business Tasks can be excuted by worker type A and B
  - Technical Tasks can be excuted by worker type A and C
+ 
+ <div align="center">
+  <img src="imgs/detail.png" alt="Detail">
+</div>
 
 # FEATURES
  - Add tasks to message queue
