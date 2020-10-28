@@ -17,9 +17,9 @@ class Worker(ABC):
         self.execution_speed = 1
         self.status = WORKER_STATUS['WAITING']
         self.coro_task = self.loop.create_task(self.excute())
-
         self.done = asyncio.Event()
         self.done.set()
+        self.waiting_for_shutdown = False
 
     async def excute(self):
         while True:
@@ -36,10 +36,14 @@ class Worker(ABC):
                 await asyncio.sleep(difficulty / self.execution_speed)
                 self.status = WORKER_STATUS['WAITING']
                 self.done.set()
+                if self.waiting_for_shutdown:
+                    self.status = WORKER_STATUS['STOPPED']
+                    self.coro_task.cancel()
+                    return
 
             await asyncio.sleep(0.1)
 
     async def shutdown(self):
-        await self.done.wait()
-        self.coro_task.cancel()
-        self.status = WORKER_STATUS['STOPPED']
+        if self.done.is_set():
+            self.coro_task.cancel()
+            self.status = WORKER_STATUS['STOPPED']

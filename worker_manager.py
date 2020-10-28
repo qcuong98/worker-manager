@@ -48,3 +48,4 @@ class WorkerManager:
         for worker in self.workers:
             if worker.id == worker_id:
                 asyncio.run(worker.shutdown())
+                worker.waiting_for_shutdown = True
