@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="Worker Manager">
+  <meta name="author" content="qcuong98">
+  <title>Worker Manager</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+
+</head>
+
+<script>
+$(document).ready(function() {
+  window.URL = window.URL || window.webkitURL;
+  $("#task-form").submit(function(e) {
+    e.preventDefault();
+
+    var task = document.getElementById("task-type").value;
+    var difficulty = document.getElementById("difficulty").value;
+
+    var json_data = {
+      task: task,
+      difficulty: difficulty
+    }
+    $.ajax({
+      type: "POST",
+      url: "/add-task",
+      contentType: "application/json",
+      data: JSON.stringify(json_data),
+      success: function(response){
+        console.log(response)
+      },
+      error: function (jqXHR, status, error) {
+        if (jqXHR.status&&jqXHR.status==400)
+          alert(jqXHR.responseText); 
+        else
+          alert("Something went wrong");
+      }
+    });
+  });
+
+  $("#worker-form").submit(function(e) {
+    e.preventDefault();
+
+    $.ajax({
+      type: "POST",
+      url: "/view-workers",
+      success: function(response){
+        console.log(response);
+
+        var tbody = document.getElementById("workers-body");
+        while (tbody.firstChild) {
+          tbody.firstChild.remove()
+        }
+
+        var template = document.getElementById("worker-row");
+
+        response.forEach(function(entry) {
+          var clone = template.content.cloneNode(true);
+          var td = clone.querySelectorAll("td");
+          td[0].textContent = entry["type"];
+          td[1].textContent = entry["id"];
+          td[2].textContent = entry["status"];
+          tbody.appendChild(clone);
+        })
+      },
+      error: function (jqXHR, status, error) {
+        if (jqXHR.status&&jqXHR.status==400)
+          alert(jqXHR.responseText); 
+        else
+          alert("Something went wrong");
+      }
+    });
+  });
+});
+
+function shutdownWorker(event) {
+  var node = event.parentNode.parentNode.children[1];
+  id = node.textContent;
+  $.ajax({
+      type: "DELETE",
+      url: "/shutdown-worker/" + id,
+      success: function(response){
+        console.log(response)
+        $.ajax({
+      type: "POST",
+      url: "/view-workers",
+      success: function(response){
+        console.log(response);
+
+        var tbody = document.getElementById("workers-body");
+        while (tbody.firstChild) {
+          tbody.firstChild.remove()
+        }
+
+        var template = document.getElementById("worker-row");
+
+        response.forEach(function(entry) {
+          var clone = template.content.cloneNode(true);
+          var td = clone.querySelectorAll("td");
+          td[0].textContent = entry["type"];
+          td[1].textContent = entry["id"];
+          td[2].textContent = entry["status"];
+          tbody.appendChild(clone);
+        })
+      },
+      error: function (jqXHR, status, error) {
+        if (jqXHR.status&&jqXHR.status==400)
+          alert(jqXHR.responseText); 
+        else
+          alert("Something went wrong");
+      }
+    });
+      },
+      error: function (jqXHR, status, error) {
+        if (jqXHR.status&&jqXHR.status==400)
+          alert(jqXHR.responseText); 
+        else
+          alert("Something went wrong");
+      }
+    });
+}
+
+</script>
+
+<body>
+  <!-- the navbar -->
+  <nav class="navbar navbar-toggleable-md navbar navbar-dark bg-primary">
+    <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="#">HOME</a>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/qcuong98/worker_manager">Source Code</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="mailto:tqcuong1998@gmail.com">Contact</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- the jumbotron -->
+  <div class="jumbotron">
+    <h3 class="display-3">Simplified Version of Worker Manager</h3>
+    <hr class="my-4">
+
+    <h4>Add Task</h4>
+    <form class="form-inline" id="task-form" action="/" method="POST">
+      <label for="task-type">Task Type: </label>
+      <select class="custom-select my-1 mr-sm-2" id="task-type">
+          <option value="Business">Business</option>
+          <option value="Technical">Technical</option>
+      </select>
+      <label for="difficulty">Difficulty: </label>
+      <select class="custom-select my-1 mr-sm-2" id="difficulty">
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="30">30</option>
+          <option value="60">60</option>
+          <option value="120">120</option>
+      </select>
+      <button type="submit" class="btn btn-primary my-1 mr-sm-2">Add</button>
+    </form>
+
+    <hr class="my-4">
+
+    <form class="form-inline" id="worker-form" action="/" method="POST">
+      <h4>Monitor Workers</h4>
+      <button type="submit" class="btn btn-primary my-1 mr-sm-2">View/Refresh</button>
+    </form>
+
+    <table class="table">
+      <thead id="workers-table">
+        <tr>
+          <th scope="col">Type</th>
+          <th scope="col">ID</th>
+          <th scope="col">Status</th>
+          <th scope="col">Shutdown</th>
+        </tr>
+      </thead>
+      <tbody id="workers-body">
+      </tbody>
+    </table>
+
+    <template id="worker-row">
+      <tr>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td><button onclick="shutdownWorker(this)" class="btn btn-danger my-1 mr-sm-2">X</button></td>
+        <!-- <td></td> -->
+      </tr>
+    </template>
+
+  </div>
+</div>
+</body>
+
+</html>
